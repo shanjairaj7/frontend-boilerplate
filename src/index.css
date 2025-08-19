@@ -1,0 +1,11 @@
+/* Chakra UI base styles */
+/* All Chakra UI styling is handled through the theme system and component props */
+/* This file remains minimal as Chakra UI uses CSS-in-JS */
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Optional: Add any global styles specific to your application */

@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    // Build mode optimizations
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    
+    // Performance optimizations
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "isolatedModules": true,
+    "allowJs": true,
+    "checkJs": false,
+    
+    // Essential type checking
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitReturns": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    
+    // Build mode settings
+    "incremental": true,
+    "composite": true,
+    "tsBuildInfoFile": "./.tsbuildinfo-build",
+    
+    // Minimal paths
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  // Only src directory
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules/**/*",
+    "**/*.test.*",
+    "**/*.spec.*"
+  ]
+}

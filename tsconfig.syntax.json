@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    // Syntax-only checking for maximum speed
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    
+    // Maximum performance - skip all semantic checks
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "isolatedModules": true,
+    "noResolve": true,
+    "allowJs": true,
+    "checkJs": false,
+    
+    // Minimal type checking - syntax errors only
+    "noImplicitAny": false,
+    "strict": false,
+    "noImplicitReturns": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    
+    // No incremental builds
+    "incremental": false,
+    
+    // Minimal paths
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  // Only src directory
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules/**/*",
+    "**/*.test.*",
+    "**/*.spec.*"
+  ]
+}

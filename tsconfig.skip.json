@@ -1,0 +1,49 @@
+{
+  "compilerOptions": {
+    // Aggressive skip options for maximum speed
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    
+    // Aggressive performance optimizations
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "isolatedModules": true,
+    "allowJs": true,
+    "checkJs": false,
+    "disableSizeLimit": true,
+    "disableSourceOfProjectReferenceRedirect": true,
+    "disableSolutionSearching": true,
+    "disableReferencedProjectLoad": true,
+    
+    // Essential type checking only
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitReturns": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
+    
+    // No incremental for faster cold starts
+    "incremental": false,
+    
+    // Minimal paths
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  // Only src directory
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules/**/*",
+    "**/*.test.*",
+    "**/*.spec.*"
+  ]
+}

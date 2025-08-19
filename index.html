@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    
+    <!-- Frontend Console Log Capture System -->
+    <script>
+      (function() {
+        // Get project ID from meta tag (injected by local-api.py)
+        const getProjectId = () => {
+          const metaTag = document.querySelector('meta[name="project-id"]');
+          return metaTag ? metaTag.content : 'frontend-project';
+        };
+
+        const projectId = getProjectId();
+        const logBuffer = [];
+        const MAX_BUFFER_SIZE = 1000;
+
+        // Console capture function
+        const captureConsole = (level, originalMethod) => {
+          return function(...args) {
+            // Call original console method first
+            originalMethod.apply(console, args);
+            
+            // Capture the log entry
+            const timestamp = new Date().toISOString();
+            const message = args.map(arg => 
+              typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            
+            const logEntry = {
+              timestamp,
+              level: level.toUpperCase(),
+              message,
+              url: window.location.href,
+              userAgent: navigator.userAgent.split(' ')[0] // Simplified user agent
+            };
+
+            // Add to buffer
+            logBuffer.push(logEntry);
+            
+            // Keep buffer size manageable
+            if (logBuffer.length > MAX_BUFFER_SIZE) {
+              logBuffer.shift();
+            }
+
+            // Write to logs immediately for critical errors
+            if (level === 'error') {
+              writeLogsToFile([logEntry], true);
+            }
+          };
+        };
+
+        // Capture uncaught errors
+        window.addEventListener('error', (event) => {
+          const logEntry = {
+            timestamp: new Date().toISOString(),
+            level: 'ERROR',
+            message: `Uncaught Error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`,
+            url: window.location.href,
+            stack: event.error?.stack || 'No stack trace available'
+          };
+          
+          logBuffer.push(logEntry);
+          writeLogsToFile([logEntry], true);
+        });
+
+        // Capture unhandled promise rejections
+        window.addEventListener('unhandledrejection', (event) => {
+          const logEntry = {
+            timestamp: new Date().toISOString(),
+            level: 'ERROR',
+            message: `Unhandled Promise Rejection: ${event.reason}`,
+            url: window.location.href,
+            stack: event.reason?.stack || 'No stack trace available'
+          };
+          
+          logBuffer.push(logEntry);
+          writeLogsToFile([logEntry], true);
+        });
+
+        // Write logs to local logs.md file
+        const writeLogsToFile = async (logs, immediate = false) => {
+          try {
+            const logText = logs.map(log => 
+              `[${log.timestamp}] [${log.level}] ${log.message}`
+            ).join('\n') + '\n';
+            
+            // Store in localStorage as a simple approach
+            const existingLogs = localStorage.getItem('frontend-console-logs') || '';
+            const newLogs = existingLogs + logText;
+            localStorage.setItem('frontend-console-logs', newLogs);
+            
+            // Also expose globally for debugging
+            window.__frontendLogsText = newLogs;
+            
+          } catch (error) {
+            // Failsafe: don't create infinite loops
+            if (error.message !== 'Failed to write logs to storage') {
+              console.warn('Error writing logs to storage:', error);
+            }
+          }
+        };
+
+        // Override console methods
+        const originalConsole = {
+          log: console.log,
+          error: console.error,
+          warn: console.warn,
+          debug: console.debug,
+          info: console.info
+        };
+
+        console.log = captureConsole('log', originalConsole.log);
+        console.error = captureConsole('error', originalConsole.error);
+        console.warn = captureConsole('warn', originalConsole.warn);
+        console.debug = captureConsole('debug', originalConsole.debug);
+        console.info = captureConsole('info', originalConsole.info);
+
+        // Batch write logs every 5 seconds (for non-critical logs)
+        setInterval(() => {
+          if (logBuffer.length > 0) {
+            const logsToWrite = [...logBuffer];
+            writeLogsToFile(logsToWrite, false);
+          }
+        }, 5000);
+
+        // Write logs before page unload
+        window.addEventListener('beforeunload', () => {
+          if (logBuffer.length > 0) {
+            const logsToWrite = [...logBuffer];
+            writeLogsToFile(logsToWrite, true);
+          }
+        });
+
+        // Expose log buffer for debugging
+        window.__frontendLogs = {
+          buffer: logBuffer,
+          projectId: projectId,
+          writeLogs: () => writeLogsToFile([...logBuffer], true),
+          clearBuffer: () => logBuffer.length = 0,
+          getStoredLogs: () => localStorage.getItem('frontend-console-logs')
+        };
+
+        console.log(`Frontend log capture initialized for project: ${projectId}`);
+      })();
+    </script>
+
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

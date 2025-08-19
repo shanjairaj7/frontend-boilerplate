@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    // Ultra-minimal config for maximum speed
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    
+    // Maximum performance - skip everything possible
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "isolatedModules": true,
+    "allowJs": true,
+    "checkJs": false,
+    "disableSizeLimit": true,
+    "disableSourceOfProjectReferenceRedirect": true,
+    "disableSolutionSearching": true,
+    "disableReferencedProjectLoad": true,
+    
+    // Only essential error checking
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    
+    // Ultra-fast incremental
+    "incremental": true,
+    "tsBuildInfoFile": "./.tsbuildinfo-ultra"
+  },
+  // Minimal includes - only user code
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules/**/*",
+    "dist/**/*",
+    "build/**/*",
+    "public/**/*",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/*.stories.*",
+    "**/*.config.*",
+    "vite.config.*"
+  ]
+}
