@@ -1,39 +1,24 @@
-import {
-  Box,
-  Container,
-  Heading,
-  VStack,
-  SimpleGrid,
-  useColorModeValue,
-} from '@chakra-ui/react'
-
 export default function SimpleHomePage() {
-  const bgColor = useColorModeValue('gray.50', 'gray.900')
-  const cardBg = useColorModeValue('gray.100', 'gray.700')
-
   return (
-    <Box minH="100vh" bg={bgColor}>
-      <Container maxW="6xl" py={8}>
-        <VStack spacing={8} align="stretch">
-          <Box textAlign="center">
-            <Heading as="h1" size="2xl" color="brand.500" mb={4}>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-8 px-4 max-w-6xl">
+        <div className="space-y-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground">
               Dashboard
-            </Heading>
-          </Box>
+            </h1>
+          </div>
 
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 24 }).map((_, index) => (
-              <Box
+              <div
                 key={index}
-                h="12"
-                bg={cardBg}
-                borderRadius="lg"
-                aspectRatio="video"
+                className="h-12 bg-muted rounded-lg aspect-video"
               />
             ))}
-          </SimpleGrid>
-        </VStack>
-      </Container>
-    </Box>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

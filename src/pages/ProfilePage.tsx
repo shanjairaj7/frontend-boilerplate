@@ -1,36 +1,15 @@
 import React from 'react';
-import {
-  Box,
-  Container,
-  Heading,
-  Text,
-  VStack,
-  Card,
-  CardBody,
-  CardHeader,
-  Avatar,
-  Badge,
-  Button,
-  HStack,
-  SimpleGrid,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatGroup,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FiEdit2, FiMail, FiCalendar, FiMapPin } from 'react-icons/fi';
 
 /**
- * CHAKRA UI BOILERPLATE PROFILE PAGE
+ * SHADCN/UI BOILERPLATE PROFILE PAGE
  * 
- * This demonstrates profile components using Chakra UI.
- * All styling is handled by Chakra UI with beautiful design out of the box.
+ * This demonstrates profile components using shadcn/ui and Tailwind CSS.
+ * All styling is handled by shadcn components with clean design.
  */
 export default function ProfilePage() {
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const cardBg = useColorModeValue('white', 'gray.800');
-
   const userStats = [
     { label: 'Projects', value: '12' },
     { label: 'Followers', value: '543' },
@@ -44,166 +23,163 @@ export default function ProfilePage() {
     { label: 'Full Stack', color: 'orange' },
   ];
 
+  const getBadgeColor = (color: string) => {
+    const colors = {
+      blue: 'bg-blue-50 text-blue-700 ring-blue-700/10',
+      purple: 'bg-purple-50 text-purple-700 ring-purple-700/10',
+      green: 'bg-green-50 text-green-700 ring-green-700/10',
+      orange: 'bg-orange-50 text-orange-700 ring-orange-700/10',
+    };
+    return colors[color as keyof typeof colors] || colors.blue;
+  };
+
   return (
-    <Box minH="100vh" bg={bgColor}>
-      <Container maxW="6xl" py={8}>
-        <VStack spacing={8} align="stretch">
-          {/* Page Header */}
-          <Box textAlign="center">
-            <Heading as="h1" size="2xl" color="brand.500" mb={4}>
-              User Profile
-            </Heading>
-            <Text fontSize="lg" color="gray.600">
-              Manage your profile information and preferences with Chakra UI components.
-            </Text>
-          </Box>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-8 px-4 max-w-6xl">
+        <div className="space-y-8">
+          {/* Profile Header */}
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col md:flex-row gap-6 items-start">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                  JD
+                </div>
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <CardTitle className="text-3xl">John Doe</CardTitle>
+                    <CardDescription className="text-lg">Full Stack Developer & UI/UX Designer</CardDescription>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <FiMail className="w-4 h-4" />
+                      john.doe@example.com
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiMapPin className="w-4 h-4" />
+                      San Francisco, CA
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiCalendar className="w-4 h-4" />
+                      Joined March 2023
+                    </div>
+                  </div>
 
-          {/* Profile Information Card */}
-          <Card bg={cardBg} shadow="lg" maxW="4xl" mx="auto" w="full">
-            <CardBody p={8}>
-              <VStack spacing={6}>
-                {/* Avatar and Basic Info */}
-                <VStack spacing={4}>
-                  <Avatar
-                    size="2xl"
-                    name="John Doe"
-                    src="https://github.com/shadcn.png"
-                    border="4px solid"
-                    borderColor="brand.500"
-                  />
-                  <VStack spacing={2} textAlign="center">
-                    <Heading size="lg" color="brand.500">John Doe</Heading>
-                    <Text color="gray.600" fontSize="lg">Full Stack Developer</Text>
-                    <Text color="gray.500" maxW="md" textAlign="center">
-                      Passionate developer who loves creating beautiful and functional user experiences 
-                      with modern web technologies.
-                    </Text>
-                  </VStack>
-                </VStack>
-
-                {/* Contact Information */}
-                <VStack spacing={3}>
-                  <HStack spacing={2} color="gray.600">
-                    <Box as={FiMail} />
-                    <Text>john.doe@example.com</Text>
-                  </HStack>
-                  <HStack spacing={2} color="gray.600">
-                    <Box as={FiMapPin} />
-                    <Text>San Francisco, CA</Text>
-                  </HStack>
-                  <HStack spacing={2} color="gray.600">
-                    <Box as={FiCalendar} />
-                    <Text>Joined December 2023</Text>
-                  </HStack>
-                </VStack>
-
-                {/* Action Buttons */}
-                <HStack spacing={4}>
-                  <Button
-                    leftIcon={<FiEdit2 />}
-                    colorScheme="brand"
-                    size="lg"
-                    _hover={{ transform: 'translateY(-2px)' }}
-                    transition="all 0.2s"
-                  >
-                    Edit Profile
-                  </Button>
-                  <Button
-                    variant="outline"
-                    colorScheme="brand"
-                    size="lg"
-                    _hover={{ transform: 'translateY(-2px)' }}
-                    transition="all 0.2s"
-                  >
-                    Share Profile
-                  </Button>
-                </HStack>
-              </VStack>
-            </CardBody>
+                  <p className="text-muted-foreground">
+                    Passionate developer with 5+ years of experience building modern web applications. 
+                    Love working with React, TypeScript, and creating beautiful user experiences. 
+                    Always learning and exploring new technologies.
+                  </p>
+                </div>
+                
+                <Button className="hover:-translate-y-0.5 transition-transform">
+                  <FiEdit2 className="w-4 h-4 mr-2" />
+                  Edit Profile
+                </Button>
+              </div>
+            </CardHeader>
           </Card>
 
-          {/* Statistics */}
-          <Card bg={cardBg} shadow="md" maxW="4xl" mx="auto" w="full">
-            <CardHeader>
-              <Heading size="lg" color="brand.500" textAlign="center">Profile Statistics</Heading>
-            </CardHeader>
-            <CardBody>
-              <StatGroup justifyContent="center">
-                {userStats.map((stat, index) => (
-                  <Stat key={index} textAlign="center">
-                    <StatNumber fontSize="3xl" color="brand.500">{stat.value}</StatNumber>
-                    <StatLabel color="gray.600">{stat.label}</StatLabel>
-                  </Stat>
-                ))}
-              </StatGroup>
-            </CardBody>
-          </Card>
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {userStats.map((stat, index) => (
+              <Card key={index}>
+                <CardContent className="pt-6">
+                  <div className="text-center space-y-2">
+                    <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-          {/* Skills and Badges */}
-          <Card bg={cardBg} shadow="md" maxW="4xl" mx="auto" w="full">
+          {/* Skills & Badges */}
+          <Card>
             <CardHeader>
-              <Heading size="lg" color="brand.500" textAlign="center">Skills & Expertise</Heading>
+              <CardTitle>Skills & Expertise</CardTitle>
+              <CardDescription>Technologies and areas of expertise</CardDescription>
             </CardHeader>
-            <CardBody>
-              <HStack spacing={3} justify="center" wrap="wrap">
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
                 {badges.map((badge, index) => (
-                  <Badge
+                  <span
                     key={index}
-                    colorScheme={badge.color}
-                    variant="solid"
-                    px={3}
-                    py={1}
-                    borderRadius="full"
-                    fontSize="sm"
+                    className={'inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ' + getBadgeColor(badge.color)}
                   >
                     {badge.label}
-                  </Badge>
+                  </span>
                 ))}
-              </HStack>
-            </CardBody>
+              </div>
+            </CardContent>
           </Card>
 
           {/* Recent Activity */}
-          <Card bg={cardBg} shadow="md" maxW="4xl" mx="auto" w="full">
+          <Card>
             <CardHeader>
-              <Heading size="lg" color="brand.500" textAlign="center">Recent Activity</Heading>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>Latest projects and contributions</CardDescription>
             </CardHeader>
-            <CardBody>
-              <VStack spacing={4} align="stretch">
-                <Box p={4} bg={useColorModeValue('gray.50', 'gray.700')} borderRadius="md">
-                  <HStack justify="space-between">
-                    <VStack align="start" spacing={1}>
-                      <Text fontWeight="medium">Completed React Dashboard Project</Text>
-                      <Text fontSize="sm" color="gray.600">Built a comprehensive admin dashboard</Text>
-                    </VStack>
-                    <Text fontSize="sm" color="gray.500">2 days ago</Text>
-                  </HStack>
-                </Box>
-                
-                <Box p={4} bg={useColorModeValue('gray.50', 'gray.700')} borderRadius="md">
-                  <HStack justify="space-between">
-                    <VStack align="start" spacing={1}>
-                      <Text fontWeight="medium">Updated Profile Settings</Text>
-                      <Text fontSize="sm" color="gray.600">Added new skills and updated bio</Text>
-                    </VStack>
-                    <Text fontSize="sm" color="gray.500">1 week ago</Text>
-                  </HStack>
-                </Box>
-                
-                <Box p={4} bg={useColorModeValue('gray.50', 'gray.700')} borderRadius="md">
-                  <HStack justify="space-between">
-                    <VStack align="start" spacing={1}>
-                      <Text fontWeight="medium">Joined Development Team</Text>
-                      <Text fontSize="sm" color="gray.600">Started working on new mobile app project</Text>
-                    </VStack>
-                    <Text fontSize="sm" color="gray.500">2 weeks ago</Text>
-                  </HStack>
-                </Box>
-              </VStack>
-            </CardBody>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-start gap-4 p-4 rounded-lg border bg-card">
+                  <div className="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
+                  <div className="flex-1">
+                    <p className="font-medium">Completed E-commerce Dashboard</p>
+                    <p className="text-sm text-muted-foreground">
+                      Built a comprehensive dashboard with React, TypeScript, and shadcn/ui
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">2 days ago</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 p-4 rounded-lg border bg-card">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                  <div className="flex-1">
+                    <p className="font-medium">Published React Component Library</p>
+                    <p className="text-sm text-muted-foreground">
+                      Open-sourced a collection of reusable React components
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">1 week ago</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 p-4 rounded-lg border bg-card">
+                  <div className="w-2 h-2 rounded-full bg-purple-500 mt-2"></div>
+                  <div className="flex-1">
+                    <p className="font-medium">Contributed to Open Source</p>
+                    <p className="text-sm text-muted-foreground">
+                      Added new features to popular UI component library
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">2 weeks ago</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
           </Card>
-        </VStack>
-      </Container>
-    </Box>
+
+          {/* Contact */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Get In Touch</CardTitle>
+              <CardDescription>Feel free to reach out for collaborations or questions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4">
+                <Button variant="outline" className="hover:-translate-y-0.5 transition-transform">
+                  Send Message
+                </Button>
+                <Button variant="outline" className="hover:-translate-y-0.5 transition-transform">
+                  Connect
+                </Button>
+                <Button variant="outline" className="hover:-translate-y-0.5 transition-transform">
+                  View Portfolio
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 }

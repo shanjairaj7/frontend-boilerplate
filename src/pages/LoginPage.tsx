@@ -1,21 +1,7 @@
-import {
-  Box,
-  Card,
-  CardBody,
-  CardHeader,
-  Heading,
-  Text,
-  VStack,
-  FormControl,
-  FormLabel,
-  Input,
-  Button,
-  Link,
-  Flex,
-  useColorModeValue,
-  Alert,
-  AlertIcon,
-} from '@chakra-ui/react'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useState } from 'react'
 import { useAuthStore } from '@/stores/auth-store'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
@@ -28,9 +14,6 @@ export default function LoginPage() {
   
   const login = useAuthStore((state) => state.login)
   const navigate = useNavigate()
-
-  const cardBg = useColorModeValue('white', 'gray.800')
-  const bgColor = useColorModeValue('gray.50', 'gray.900')
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -67,102 +50,90 @@ export default function LoginPage() {
   }
 
   return (
-    <Box minH="100vh" bg={bgColor} display="flex" alignItems="center" justifyContent="center" p={6}>
-      <Box w="full" maxW="md">
-        <VStack spacing={6}>
-          <Card bg={cardBg} shadow="lg" borderRadius="lg" w="full">
-            <CardHeader textAlign="center" pb={4}>
-              <Heading size="lg" color="brand.500" mb={2}>Welcome back</Heading>
-              <Text color="gray.600">Login with your account</Text>
-            </CardHeader>
-            <CardBody pt={0}>
-              <form onSubmit={handleLogin}>
-                <VStack spacing={6}>
-                  <VStack spacing={4} w="full">
-                    <FormControl isRequired>
-                      <FormLabel htmlFor="email">Email</FormLabel>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="m@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        focusBorderColor="brand.500"
-                      />
-                    </FormControl>
-                    
-                    <FormControl isRequired>
-                      <Flex justify="space-between" align="center" mb={2}>
-                        <FormLabel htmlFor="password" mb={0}>Password</FormLabel>
-                        <Link
-                          as={RouterLink}
-                          to="#"
-                          fontSize="sm"
-                          color="brand.500"
-                          _hover={{ textDecoration: 'underline' }}
-                        >
-                          Forgot your password?
-                        </Link>
-                      </Flex>
-                      <Input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        focusBorderColor="brand.500"
-                      />
-                    </FormControl>
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="w-full max-w-md space-y-6">
+        <Card className="shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Welcome back</CardTitle>
+            <CardDescription>Login with your account</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin}>
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="m@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="password">Password</Label>
+                      <RouterLink
+                        to="#"
+                        className="text-sm text-primary hover:underline"
+                      >
+                        Forgot your password?
+                      </RouterLink>
+                    </div>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
 
-                    {error && (
-                      <Alert status="error" borderRadius="md">
-                        <AlertIcon />
-                        {error}
-                      </Alert>
-                    )}
+                  {error && (
+                    <div className="bg-destructive/15 border border-destructive/20 text-destructive px-4 py-3 rounded-md text-sm">
+                      {error}
+                    </div>
+                  )}
 
-                    <Button
-                      type="submit"
-                      colorScheme="brand"
-                      w="full"
-                      size="lg"
-                      isLoading={isLoading}
-                      loadingText="Signing in..."
-                      _hover={{ transform: 'translateY(-2px)' }}
-                      transition="all 0.2s"
-                    >
-                      Login
-                    </Button>
-                  </VStack>
+                  <Button
+                    type="submit"
+                    className="w-full hover:-translate-y-0.5 transition-transform"
+                    size="lg"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Signing in..." : "Login"}
+                  </Button>
+                </div>
 
-                  <Text textAlign="center" fontSize="sm" color="gray.600">
-                    Don't have an account?{' '}
-                    <Link
-                      as={RouterLink}
-                      to="/signup"
-                      color="brand.500"
-                      _hover={{ textDecoration: 'underline' }}
-                    >
-                      Sign up
-                    </Link>
-                  </Text>
-                </VStack>
-              </form>
-            </CardBody>
-          </Card>
+                <p className="text-center text-sm text-muted-foreground">
+                  Don't have an account?{' '}
+                  <RouterLink
+                    to="/signup"
+                    className="text-primary hover:underline"
+                  >
+                    Sign up
+                  </RouterLink>
+                </p>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
 
-          <Text fontSize="xs" color="gray.500" textAlign="center" lineHeight="tall">
-            By clicking continue, you agree to our{' '}
-            <Link href="#" color="brand.500" _hover={{ textDecoration: 'underline' }}>
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link href="#" color="brand.500" _hover={{ textDecoration: 'underline' }}>
-              Privacy Policy
-            </Link>
-            .
-          </Text>
-        </VStack>
-      </Box>
-    </Box>
+        <p className="text-xs text-muted-foreground text-center leading-relaxed">
+          By clicking continue, you agree to our{' '}
+          <a href="#" className="text-primary hover:underline">
+            Terms of Service
+          </a>{' '}
+          and{' '}
+          <a href="#" className="text-primary hover:underline">
+            Privacy Policy
+          </a>
+          .
+        </p>
+      </div>
+    </div>
   )
 }
