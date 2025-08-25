@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { FiEdit2, FiMail, FiCalendar, FiMapPin } from 'react-icons/fi';
+import { Edit2, Mail, Calendar, MapPin } from 'lucide-react';
 
 /**
  * SHADCN/UI BOILERPLATE PROFILE PAGE
@@ -52,15 +52,15 @@ export default function ProfilePage() {
                   
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
-                      <FiMail className="w-4 h-4" />
+                      <Mail className="w-4 h-4" />
                       john.doe@example.com
                     </div>
                     <div className="flex items-center gap-2">
-                      <FiMapPin className="w-4 h-4" />
+                      <MapPin className="w-4 h-4" />
                       San Francisco, CA
                     </div>
                     <div className="flex items-center gap-2">
-                      <FiCalendar className="w-4 h-4" />
+                      <Calendar className="w-4 h-4" />
                       Joined March 2023
                     </div>
                   </div>
@@ -73,7 +73,7 @@ export default function ProfilePage() {
                 </div>
                 
                 <Button className="hover:-translate-y-0.5 transition-transform">
-                  <FiEdit2 className="w-4 h-4 mr-2" />
+                  <Edit2 className="w-4 h-4 mr-2" />
                   Edit Profile
                 </Button>
               </div>
