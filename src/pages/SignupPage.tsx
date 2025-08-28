@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuthStore } from '@/stores/auth-store'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 
@@ -11,43 +11,39 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [localError, setLocalError] = useState('')
   
-  const login = useAuthStore((state) => state.login)
+  const { signup, loading, error, clearError } = useAuthStore()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    // Clear any existing errors when component mounts
+    clearError()
+  }, [clearError])
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setError('')
-    setIsLoading(true)
+    setLocalError('')
+    clearError()
 
     if (!name || !email || !password || !confirmPassword) {
-      setError("Please fill in all fields")
-      setIsLoading(false)
+      setLocalError("Please fill in all fields")
       return
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords don't match")
-      setIsLoading(false)
+      setLocalError("Passwords don't match")
       return
     }
 
-    try {
-      // Create account and log user in
-      login({
-        id: "1",
-        name: name,
-        email: email,
-        avatar: "https://github.com/shadcn.png"
-      })
-      
+    if (password.length < 6) {
+      setLocalError("Password must be at least 6 characters")
+      return
+    }
+
+    const success = await signup(email, password, name)
+    if (success) {
       navigate("/")
-    } catch (err) {
-      setError("Signup failed. Please try again.")
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -109,9 +105,9 @@ export default function SignupPage() {
                     />
                   </div>
 
-                  {error && (
+                  {(localError || error) && (
                     <div className="bg-destructive/15 border border-destructive/20 text-destructive px-4 py-3 rounded-md text-sm">
-                      {error}
+                      {localError || error}
                     </div>
                   )}
 
@@ -119,9 +115,9 @@ export default function SignupPage() {
                     type="submit"
                     className="w-full hover:-translate-y-0.5 transition-transform"
                     size="lg"
-                    disabled={isLoading}
+                    disabled={loading}
                   >
-                    {isLoading ? "Creating account..." : "Create account"}
+                    {loading ? "Creating account..." : "Create account"}
                   </Button>
                 </div>
 
