@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import axios from 'axios'
 import { toast } from 'sonner'
 
 export interface User {
