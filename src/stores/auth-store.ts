@@ -47,14 +47,22 @@ export const useAuthStore = create<AuthState>()(
       signup: async (email: string, password: string, name: string) => {
         set({ loading: true, error: null })
         try {
+          console.log('Attempting signup with:', { email, name })
           const response = await axios.post<AuthResponse>(`${API_BASE_URL}/auth/signup`, {
             email,
             password,
             name
           })
 
+          console.log('Signup response:', { 
+            status: response.status, 
+            data: response.data 
+          })
+
           if (response.status === 201) {
             const { access_token, user } = response.data
+            
+            console.log('Signup successful, setting auth state:', { user, token: access_token })
             
             // Set token in axios defaults for future requests
             axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
@@ -68,8 +76,14 @@ export const useAuthStore = create<AuthState>()(
             
             toast.success('Account created successfully!')
             return true
+          } else {
+            console.error('Unexpected signup response status:', response.status)
+            set({ error: `Unexpected response status: ${response.status}`, loading: false })
+            toast.error(`Signup failed with status: ${response.status}`)
+            return false
           }
         } catch (error: any) {
+          console.error('Signup error:', error)
           let errorMessage = 'Signup failed. Please try again.'
           
           if (error.response?.data?.detail) {
@@ -81,8 +95,14 @@ export const useAuthStore = create<AuthState>()(
               // Handle single error message
               errorMessage = detail
             }
+          } else if (error.response?.data) {
+            // Handle other error formats
+            errorMessage = error.response.data.message || error.response.data.error || errorMessage
+          } else if (error.message) {
+            errorMessage = error.message
           }
           
+          console.error('Processed error message:', errorMessage)
           set({ error: errorMessage, loading: false })
           toast.error(errorMessage)
         }
@@ -92,13 +112,21 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ loading: true, error: null })
         try {
+          console.log('Attempting login with:', { email })
           const response = await axios.post<AuthResponse>(`${API_BASE_URL}/auth/login`, {
             email,
             password
           })
 
+          console.log('Login response:', { 
+            status: response.status, 
+            data: response.data 
+          })
+
           if (response.status === 200) {
             const { access_token, user } = response.data
+            
+            console.log('Login successful, setting auth state:', { user, token: access_token })
             
             // Set token in axios defaults for future requests
             axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
@@ -112,8 +140,14 @@ export const useAuthStore = create<AuthState>()(
             
             toast.success('Logged in successfully!')
             return true
+          } else {
+            console.error('Unexpected login response status:', response.status)
+            set({ error: `Unexpected response status: ${response.status}`, loading: false })
+            toast.error(`Login failed with status: ${response.status}`)
+            return false
           }
         } catch (error: any) {
+          console.error('Login error:', error)
           let errorMessage = 'Login failed. Please try again.'
           
           if (error.response?.data?.detail) {
@@ -125,8 +159,14 @@ export const useAuthStore = create<AuthState>()(
               // Handle single error message
               errorMessage = detail
             }
+          } else if (error.response?.data) {
+            // Handle other error formats
+            errorMessage = error.response.data.message || error.response.data.error || errorMessage
+          } else if (error.message) {
+            errorMessage = error.message
           }
           
+          console.error('Processed error message:', errorMessage)
           set({ error: errorMessage, loading: false })
           toast.error(errorMessage)
         }
