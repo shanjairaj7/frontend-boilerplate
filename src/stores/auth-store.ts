@@ -8,8 +8,6 @@ export interface User {
   email: string
   name: string
   is_active: boolean
-  organization_ids: number[]
-  role: string
   created_at: string
 }
 
@@ -72,7 +70,19 @@ export const useAuthStore = create<AuthState>()(
             return true
           }
         } catch (error: any) {
-          const errorMessage = error.response?.data?.detail || 'Signup failed. Please try again.'
+          let errorMessage = 'Signup failed. Please try again.'
+          
+          if (error.response?.data?.detail) {
+            const detail = error.response.data.detail
+            if (Array.isArray(detail)) {
+              // Handle validation errors (array format)
+              errorMessage = detail.map((err: any) => err.msg).join(', ')
+            } else {
+              // Handle single error message
+              errorMessage = detail
+            }
+          }
+          
           set({ error: errorMessage, loading: false })
           toast.error(errorMessage)
         }
@@ -104,7 +114,19 @@ export const useAuthStore = create<AuthState>()(
             return true
           }
         } catch (error: any) {
-          const errorMessage = error.response?.data?.detail || 'Login failed. Please try again.'
+          let errorMessage = 'Login failed. Please try again.'
+          
+          if (error.response?.data?.detail) {
+            const detail = error.response.data.detail
+            if (Array.isArray(detail)) {
+              // Handle validation errors (array format)
+              errorMessage = detail.map((err: any) => err.msg).join(', ')
+            } else {
+              // Handle single error message
+              errorMessage = detail
+            }
+          }
+          
           set({ error: errorMessage, loading: false })
           toast.error(errorMessage)
         }
