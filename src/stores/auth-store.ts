@@ -64,6 +64,13 @@ export const useAuthStore = create<AuthState>()(
             
             console.log('Signup successful, setting auth state:', { user, token: access_token })
             
+            // CRITICAL: Store token for authentication
+            // Token is now available in Zustand store: useAuthStore.getState().token
+            // Access pattern: const { token } = useAuthStore()
+            // API calls: Authorization header = `Bearer ${token}`
+            console.log('🔑 TOKEN STORED:', access_token)
+            console.log('🔑 How to access token: useAuthStore.getState().token')
+            
             // Set token in axios defaults for future requests
             axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
             
@@ -127,6 +134,13 @@ export const useAuthStore = create<AuthState>()(
             const { access_token, user } = response.data
             
             console.log('Login successful, setting auth state:', { user, token: access_token })
+            
+            // CRITICAL: Store token for authentication  
+            // Token is now available in Zustand store: useAuthStore.getState().token
+            // Access pattern: const { token } = useAuthStore()
+            // API calls: Authorization header = `Bearer ${token}`
+            console.log('🔑 TOKEN STORED:', access_token)
+            console.log('🔑 How to access token: useAuthStore.getState().token')
             
             // Set token in axios defaults for future requests
             axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
