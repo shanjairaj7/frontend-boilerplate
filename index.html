@@ -9,6 +9,710 @@
     <body>
         <div id="root"></div>
 
+        <!-- Console Log Interceptor & Network Monitor (Hidden UI Mode) -->
+        <!-- 
+        IMPORTANT: This monitoring system captures all console logs and network requests
+        and sends them to the API, but does NOT display them in the UI.
+        
+        - All console.log, console.error, etc. are intercepted and sent to API
+        - All fetch() and XMLHttpRequest calls are monitored and sent to API  
+        - Data is stored in IndexedDB for persistence
+        - UI display panels and toggle buttons have been removed/hidden
+        - Background monitoring continues to work for debugging purposes
+        -->
+        <script>
+            // Store original console methods
+            const originalConsole = {
+                log: console.log,
+                error: console.error,
+                warn: console.warn,
+                info: console.info,
+                debug: console.debug,
+            };
+
+            // Create log container
+            const logContainer = document.createElement("div");
+            logContainer.id = "console-logs";
+            logContainer.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                width: 400px;
+                max-height: 60vh;
+                background: rgba(0, 0, 0, 0.9);
+                color: #00ff00;
+                font-family: monospace;
+                font-size: 12px;
+                padding: 10px;
+                border-radius: 5px;
+                z-index: 9999;
+                overflow-y: auto;
+                border: 1px solid #333;
+                display: none;
+            `;
+
+            // Hide the toggle button - only append logContainer for background monitoring
+            // Note: Logs are still captured and sent to API, just not shown in UI
+            document.body.appendChild(logContainer);
+
+            // Function to process logs (no UI display, just storage and API)
+            function addLogToDisplay(type, args, shouldStore = true) {
+                const timestamp = new Date().toLocaleTimeString();
+
+                // Skip UI rendering - just store and send to API
+                if (shouldStore) {
+                    storeConsoleLog(type, args);
+
+                    // Send to API
+                    const logData = {
+                        timestamp: Date.now(),
+                        time: timestamp,
+                        logType: type,
+                        args: args.map((arg) => {
+                            if (typeof arg === "object") {
+                                try {
+                                    return JSON.stringify(arg);
+                                } catch (e) {
+                                    return String(arg);
+                                }
+                            }
+                            return String(arg);
+                        }),
+                        message: args.map((arg) => String(arg)).join(" "),
+                    };
+
+                    sendToAPI("logs", logData);
+                }
+            }
+
+            // Override console methods
+            console.log = function (...args) {
+                originalConsole.log.apply(console, args);
+                addLogToDisplay("log", args);
+            };
+
+            console.error = function (...args) {
+                originalConsole.error.apply(console, args);
+                addLogToDisplay("error", args);
+            };
+
+            console.warn = function (...args) {
+                originalConsole.warn.apply(console, args);
+                addLogToDisplay("warn", args);
+            };
+
+            console.info = function (...args) {
+                originalConsole.info.apply(console, args);
+                addLogToDisplay("info", args);
+            };
+
+            console.debug = function (...args) {
+                originalConsole.debug.apply(console, args);
+                addLogToDisplay("debug", args);
+            };
+
+            // Catch unhandled errors
+            window.addEventListener("error", function (e) {
+                addLogToDisplay("error", [
+                    `Unhandled Error: ${e.message}`,
+                    `File: ${e.filename}:${e.lineno}:${e.colno}`,
+                ]);
+            });
+
+            // Catch unhandled promise rejections
+            window.addEventListener("unhandledrejection", function (e) {
+                addLogToDisplay("error", [
+                    `Unhandled Promise Rejection:`,
+                    e.reason,
+                ]);
+            });
+
+            // IndexedDB Storage for Logs
+            let db = null;
+            const DB_NAME = "DevLogsDB";
+            const DB_VERSION = 1;
+            const CONSOLE_STORE = "consoleLogs";
+            const NETWORK_STORE = "networkLogs";
+            const MAX_CONSOLE_LOGS = 100;
+            const MAX_NETWORK_LOGS = 100;
+
+            // Initialize IndexedDB
+            function initDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => {
+                        db = request.result;
+                        resolve(db);
+                    };
+
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+
+                        // Create console logs store
+                        if (!db.objectStoreNames.contains(CONSOLE_STORE)) {
+                            const consoleStore = db.createObjectStore(
+                                CONSOLE_STORE,
+                                { keyPath: "id", autoIncrement: true },
+                            );
+                            consoleStore.createIndex("timestamp", "timestamp", {
+                                unique: false,
+                            });
+                        }
+
+                        // Create network logs store
+                        if (!db.objectStoreNames.contains(NETWORK_STORE)) {
+                            const networkStore = db.createObjectStore(
+                                NETWORK_STORE,
+                                { keyPath: "id", autoIncrement: true },
+                            );
+                            networkStore.createIndex("timestamp", "timestamp", {
+                                unique: false,
+                            });
+                        }
+                    };
+                });
+            }
+
+            // Store console log in IndexedDB
+            async function storeConsoleLog(type, args) {
+                if (!db) return;
+
+                const transaction = db.transaction(
+                    [CONSOLE_STORE],
+                    "readwrite",
+                );
+                const store = transaction.objectStore(CONSOLE_STORE);
+
+                const logEntry = {
+                    timestamp: Date.now(),
+                    time: new Date().toLocaleTimeString(),
+                    type: type,
+                    args: args.map((arg) => {
+                        if (typeof arg === "object") {
+                            try {
+                                return JSON.stringify(arg);
+                            } catch (e) {
+                                return String(arg);
+                            }
+                        }
+                        return String(arg);
+                    }),
+                };
+
+                await store.add(logEntry);
+
+                // Maintain rolling buffer - keep only latest MAX_CONSOLE_LOGS
+                const countRequest = store.count();
+                countRequest.onsuccess = () => {
+                    if (countRequest.result > MAX_CONSOLE_LOGS) {
+                        const deleteCount =
+                            countRequest.result - MAX_CONSOLE_LOGS;
+                        const cursorRequest = store.openCursor();
+                        let deleted = 0;
+
+                        cursorRequest.onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor && deleted < deleteCount) {
+                                cursor.delete();
+                                deleted++;
+                                cursor.continue();
+                            }
+                        };
+                    }
+                };
+            }
+
+            // Store network log in IndexedDB
+            async function storeNetworkLog(
+                method,
+                url,
+                status,
+                requestData,
+                responseData,
+                duration,
+                responseHeaders,
+            ) {
+                if (!db) return;
+
+                const transaction = db.transaction(
+                    [NETWORK_STORE],
+                    "readwrite",
+                );
+                const store = transaction.objectStore(NETWORK_STORE);
+
+                const logEntry = {
+                    timestamp: Date.now(),
+                    time: new Date().toLocaleTimeString(),
+                    method: method,
+                    url: url,
+                    status: status,
+                    requestData: requestData,
+                    responseData: responseData,
+                    responseHeaders: responseHeaders,
+                    duration: duration,
+                };
+
+                await store.add(logEntry);
+
+                // Maintain rolling buffer - keep only latest MAX_NETWORK_LOGS
+                const countRequest = store.count();
+                countRequest.onsuccess = () => {
+                    if (countRequest.result > MAX_NETWORK_LOGS) {
+                        const deleteCount =
+                            countRequest.result - MAX_NETWORK_LOGS;
+                        const cursorRequest = store.openCursor();
+                        let deleted = 0;
+
+                        cursorRequest.onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor && deleted < deleteCount) {
+                                cursor.delete();
+                                deleted++;
+                                cursor.continue();
+                            }
+                        };
+                    }
+                };
+            }
+
+            // Load console logs from IndexedDB
+            async function loadConsoleLogsFromDB() {
+                if (!db) return [];
+
+                return new Promise((resolve) => {
+                    const transaction = db.transaction(
+                        [CONSOLE_STORE],
+                        "readonly",
+                    );
+                    const store = transaction.objectStore(CONSOLE_STORE);
+                    const request = store.getAll();
+
+                    request.onsuccess = () => {
+                        const logs = request.result.sort(
+                            (a, b) => b.timestamp - a.timestamp,
+                        );
+                        // Skip loading old logs to UI since we're not displaying them
+                        // logs.forEach((log) => {
+                        //     addLogToDisplay(log.type, log.args, false);
+                        // });
+                        resolve(logs);
+                    };
+
+                    request.onerror = () => resolve([]);
+                });
+            }
+
+            // Load network logs from IndexedDB
+            async function loadNetworkLogsFromDB() {
+                if (!db) return [];
+
+                return new Promise((resolve) => {
+                    const transaction = db.transaction(
+                        [NETWORK_STORE],
+                        "readonly",
+                    );
+                    const store = transaction.objectStore(NETWORK_STORE);
+                    const request = store.getAll();
+
+                    request.onsuccess = () => {
+                        const logs = request.result.sort(
+                            (a, b) => b.timestamp - a.timestamp,
+                        );
+                        // Skip loading old network logs to UI since we're not displaying them
+                        // logs.forEach((log) => {
+                        //     addNetworkLogToDisplay(
+                        //         log.method,
+                        //         log.url,
+                        //         log.status,
+                        //         log.requestData,
+                        //         log.responseData,
+                        //         log.duration,
+                        //         log.responseHeaders,
+                        //         false, // false = don't store again
+                        //     );
+                        // });
+                        resolve(logs);
+                    };
+
+                    request.onerror = () => resolve([]);
+                });
+            }
+
+            // Configuration from environment variables
+            const CONFIG = {
+                HOST_API: "<%= hostApi %>",
+                PROJECT_ID: "<%= projectId %>",
+                BACKEND_URL: "<%= backendUrl %>",
+            };
+
+            // Rate limiting to prevent spam
+            const API_RATE_LIMIT = {
+                logs: { lastSent: 0, minInterval: 100 }, // Max 10 logs per second
+                network: { lastSent: 0, minInterval: 50 } // Max 20 network per second
+            };
+
+            // Send logs to API endpoint with rate limiting
+            async function sendToAPI(type, data) {
+                try {
+                    // Rate limiting check
+                    const now = Date.now();
+                    const rateLimiter = API_RATE_LIMIT[type];
+                    
+                    if (rateLimiter && (now - rateLimiter.lastSent) < rateLimiter.minInterval) {
+                        // Skip this request due to rate limiting
+                        return;
+                    }
+                    
+                    if (rateLimiter) {
+                        rateLimiter.lastSent = now;
+                    }
+
+                    const response = await fetch(
+                        `http://${CONFIG.HOST_API}/${CONFIG.PROJECT_ID}/server_info`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-Monitor-Request": "true", // Flag to identify monitoring requests
+                            },
+                            body: JSON.stringify({
+                                type: type, // 'logs' or 'network'
+                                ...data,
+                            }),
+                        },
+                    );
+
+                    if (!response.ok) {
+                        // Use original console to avoid recursion
+                        originalConsole.error(
+                            `Failed to send ${type} to API:`,
+                            response.status,
+                        );
+                    }
+                } catch (error) {
+                    // Use original console to avoid recursion
+                    originalConsole.error(`Error sending ${type} to API:`, error);
+                }
+            }
+
+            // Initialize DB (skip loading old logs since we're not displaying them)
+            initDB()
+                .then(() => {
+                    originalConsole.log("IndexedDB initialized");
+                    originalConsole.log("Config:", CONFIG);
+                    // Skip loading old logs since we're not displaying them in UI
+                    // loadConsoleLogsFromDB();
+                    // loadNetworkLogsFromDB();
+                })
+                .catch((err) => {
+                    originalConsole.error("Failed to initialize IndexedDB:", err);
+                });
+
+            // Initial log to confirm it's working (use original to prevent cascade)
+            originalConsole.log("Console log interceptor initialized");
+
+            // Network Request Monitor
+            const networkLogs = [];
+
+            // Create network log container
+            const networkContainer = document.createElement("div");
+            networkContainer.id = "network-logs";
+            networkContainer.style.cssText = `
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                width: 500px;
+                max-height: 60vh;
+                background: rgba(0, 0, 0, 0.9);
+                color: #00ccff;
+                font-family: monospace;
+                font-size: 11px;
+                padding: 10px;
+                border-radius: 5px;
+                z-index: 9998;
+                overflow-y: auto;
+                border: 1px solid #333;
+                display: none;
+            `;
+
+            // Hide network toggle button - only append networkContainer for background monitoring
+            // Note: Network requests are still captured and sent to API, just not shown in UI
+            document.body.appendChild(networkContainer);
+
+            // Function to process network logs (no UI display, just storage and API)
+            function addNetworkLogToDisplay(
+                method,
+                url,
+                status,
+                requestData,
+                responseData,
+                duration,
+                responseHeaders = null,
+                shouldStore = true,
+            ) {
+                const timestamp = new Date().toLocaleTimeString();
+
+                // Skip UI rendering - just store and send to API
+                if (shouldStore) {
+                    storeNetworkLog(
+                        method,
+                        url,
+                        status,
+                        requestData,
+                        responseData,
+                        duration,
+                        responseHeaders,
+                    );
+
+                    // Send to API
+                    const networkData = {
+                        timestamp: Date.now(),
+                        time: timestamp,
+                        method: method,
+                        url: url,
+                        status: status,
+                        duration: duration,
+                        requestData: requestData,
+                        responseData: responseData,
+                        responseHeaders: responseHeaders,
+                    };
+
+                    sendToAPI("network", networkData);
+                }
+            }
+
+            // Store original fetch
+            const originalFetch = window.fetch;
+
+            // Override fetch
+            window.fetch = function (...args) {
+                const startTime = performance.now();
+                const [url, options = {}] = args;
+                const method = options.method || "GET";
+
+                // Skip monitoring requests to avoid infinite loops
+                const isMonitorRequest = options.headers && options.headers["X-Monitor-Request"];
+                const isServerInfoRequest = url.includes("/server_info");
+                
+                if (isMonitorRequest || isServerInfoRequest) {
+                    // Call original fetch without monitoring
+                    return originalFetch.apply(this, args);
+                }
+
+                let requestData = "";
+                if (options.body) {
+                    try {
+                        if (typeof options.body === "string") {
+                            requestData = JSON.stringify(
+                                JSON.parse(options.body),
+                                null,
+                                2,
+                            );
+                        } else {
+                            requestData = options.body.toString();
+                        }
+                    } catch (e) {
+                        requestData = options.body.toString();
+                    }
+                }
+
+                // Add headers to request data
+                if (options.headers) {
+                    const headersStr = JSON.stringify(options.headers, null, 2);
+                    requestData = `HEADERS:\n${headersStr}\n\nBODY:\n${requestData}`;
+                }
+
+                // Don't log to console to avoid duplication in console logs
+
+                return originalFetch
+                    .apply(this, args)
+                    .then((response) => {
+                        const duration = Math.round(
+                            performance.now() - startTime,
+                        );
+
+                        // Clone response to read body without consuming it
+                        const responseClone = response.clone();
+
+                        responseClone
+                            .text()
+                            .then((responseText) => {
+                                let responseData = "";
+                                try {
+                                    const jsonResponse =
+                                        JSON.parse(responseText);
+                                    responseData = JSON.stringify(
+                                        jsonResponse,
+                                        null,
+                                        2,
+                                    );
+                                } catch (e) {
+                                    responseData = responseText;
+                                }
+
+                                // Extract response headers
+                                let responseHeadersStr = "";
+                                const headersObj = {};
+                                for (const [
+                                    key,
+                                    value,
+                                ] of response.headers.entries()) {
+                                    headersObj[key] = value;
+                                }
+                                responseHeadersStr = JSON.stringify(
+                                    headersObj,
+                                    null,
+                                    2,
+                                );
+
+                                addNetworkLogToDisplay(
+                                    method,
+                                    url,
+                                    response.status,
+                                    requestData,
+                                    responseData,
+                                    duration,
+                                    responseHeadersStr,
+                                );
+                                // Don't log to console to avoid duplication in console logs
+                            })
+                            .catch(() => {
+                                addNetworkLogToDisplay(
+                                    method,
+                                    url,
+                                    response.status,
+                                    requestData,
+                                    "Could not read response body",
+                                    duration,
+                                );
+                            });
+
+                        return response;
+                    })
+                    .catch((error) => {
+                        const duration = Math.round(
+                            performance.now() - startTime,
+                        );
+                        addNetworkLogToDisplay(
+                            method,
+                            url,
+                            "ERROR",
+                            requestData,
+                            `Error: ${error.message}`,
+                            duration,
+                            null,
+                        );
+                        // Don't log to console to avoid duplication in console logs
+                        throw error;
+                    });
+            };
+
+            // Override XMLHttpRequest
+            const originalXHROpen = XMLHttpRequest.prototype.open;
+            const originalXHRSend = XMLHttpRequest.prototype.send;
+
+            XMLHttpRequest.prototype.open = function (
+                method,
+                url,
+                async,
+                user,
+                password,
+            ) {
+                this._method = method;
+                this._url = url;
+                this._startTime = performance.now();
+                return originalXHROpen.apply(this, arguments);
+            };
+
+            XMLHttpRequest.prototype.send = function (data) {
+                const xhr = this;
+
+                let requestData = "";
+                if (data) {
+                    try {
+                        if (typeof data === "string") {
+                            requestData = JSON.stringify(
+                                JSON.parse(data),
+                                null,
+                                2,
+                            );
+                        } else {
+                            requestData = data.toString();
+                        }
+                    } catch (e) {
+                        requestData = data.toString();
+                    }
+                }
+
+                // Don't log to console to avoid duplication in console logs
+
+                const originalOnReadyStateChange = xhr.onreadystatechange;
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        const duration = Math.round(
+                            performance.now() - xhr._startTime,
+                        );
+                        let responseData = "";
+
+                        try {
+                            const jsonResponse = JSON.parse(xhr.responseText);
+                            responseData = JSON.stringify(
+                                jsonResponse,
+                                null,
+                                2,
+                            );
+                        } catch (e) {
+                            responseData = xhr.responseText;
+                        }
+
+                        // Extract response headers for XHR
+                        let responseHeadersStr = "";
+                        try {
+                            const headersObj = {};
+                            const headerStr = xhr.getAllResponseHeaders();
+                            if (headerStr) {
+                                headerStr.split("\r\n").forEach((line) => {
+                                    const parts = line.split(": ");
+                                    if (parts.length === 2) {
+                                        headersObj[parts[0]] = parts[1];
+                                    }
+                                });
+                                responseHeadersStr = JSON.stringify(
+                                    headersObj,
+                                    null,
+                                    2,
+                                );
+                            }
+                        } catch (e) {
+                            responseHeadersStr = "Could not extract headers";
+                        }
+
+                        addNetworkLogToDisplay(
+                            xhr._method,
+                            xhr._url,
+                            xhr.status,
+                            requestData,
+                            responseData,
+                            duration,
+                            responseHeadersStr,
+                        );
+                        // Don't log to console to avoid duplication in console logs
+                    }
+
+                    if (originalOnReadyStateChange) {
+                        originalOnReadyStateChange.apply(xhr, arguments);
+                    }
+                };
+
+                return originalXHRSend.apply(this, arguments);
+            };
+
+            originalConsole.log("Network request monitor initialized");
+        </script>
+
         <script type="module" src="/src/main.tsx"></script>
     </body>
 </html>
