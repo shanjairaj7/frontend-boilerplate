@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 
 /**
- * SHADCN/UI BOILERPLATE SETTINGS PAGE
+ * CLEAN CSS BOILERPLATE SETTINGS PAGE
  * 
- * This demonstrates form components using shadcn/ui and Tailwind CSS.
- * All form styling is handled by shadcn components with clean design.
+ * This demonstrates form components using custom CSS and Tailwind CSS.
+ * All form styling is handled by custom CSS components with clean design.
  */
 export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -30,64 +26,67 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto py-8 px-4 max-w-4xl">
         <div className="space-y-8">
           {/* Header */}
           <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground">
+            <h1 className="text-4xl font-bold tracking-tight">
               Settings
             </h1>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-gray-600">
               Configure your application preferences and account settings.
             </p>
           </div>
 
           {/* Profile Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Settings</CardTitle>
-              <CardDescription>Update your personal information</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="card">
+            <div className="card-header">
+              <h2 className="card-title">Profile Settings</h2>
+              <p className="card-description">Update your personal information</p>
+            </div>
+            <div className="card-content space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="displayName">Display Name</Label>
-                <Input 
+                <label htmlFor="displayName" className="label">Display Name</label>
+                <input 
                   id="displayName"
+                  className="input"
                   placeholder="Enter your display name" 
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input 
+                <label htmlFor="email" className="label">Email Address</label>
+                <input 
                   id="email"
-                  type="email" 
+                  type="email"
+                  className="input" 
                   placeholder="Enter your email address" 
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Input 
+                <label htmlFor="bio" className="label">Bio</label>
+                <input 
                   id="bio"
+                  className="input"
                   placeholder="Tell us about yourself" 
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Notification Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>Manage how you receive updates</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+          <div className="card">
+            <div className="card-header">
+              <h2 className="card-title">Notification Preferences</h2>
+              <p className="card-description">Manage how you receive updates</p>
+            </div>
+            <div className="card-content space-y-6">
               <div className="flex justify-between items-center w-full">
                 <div className="space-y-1">
                   <p className="font-medium">Email Notifications</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-600">
                     Receive email updates about your account activity
                   </p>
                 </div>
@@ -112,7 +111,7 @@ export default function SettingsPage() {
               <div className="flex justify-between items-center w-full">
                 <div className="space-y-1">
                   <p className="font-medium">Push Notifications</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-600">
                     Get push notifications on your device
                   </p>
                 </div>
@@ -133,23 +132,23 @@ export default function SettingsPage() {
                   />
                 </button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Appearance Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Appearance</CardTitle>
-              <CardDescription>Customize your visual preferences</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="card">
+            <div className="card-header">
+              <h2 className="card-title">Appearance</h2>
+              <p className="card-description">Customize your visual preferences</p>
+            </div>
+            <div className="card-content space-y-4">
               <div className="space-y-2 max-w-xs">
-                <Label htmlFor="theme">Theme</Label>
+                <label htmlFor="theme" className="label">Theme</label>
                 <select 
                   id="theme"
                   value={theme} 
                   onChange={(e) => setTheme(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="input"
                 >
                   <option value="light">Light</option>
                   <option value="dark">Dark</option>
@@ -158,12 +157,12 @@ export default function SettingsPage() {
               </div>
               
               <div className="space-y-2 max-w-xs">
-                <Label htmlFor="language">Language</Label>
+                <label htmlFor="language" className="label">Language</label>
                 <select 
                   id="language"
                   value={language} 
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="input"
                 >
                   <option value="english">English</option>
                   <option value="spanish">Spanish</option>
@@ -171,23 +170,23 @@ export default function SettingsPage() {
                   <option value="german">German</option>
                 </select>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Privacy Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Privacy & Security</CardTitle>
-              <CardDescription>Control your account security settings</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+          <div className="card">
+            <div className="card-header">
+              <h2 className="card-title">Privacy & Security</h2>
+              <p className="card-description">Control your account security settings</p>
+            </div>
+            <div className="card-content space-y-6">
               <div className="space-y-2 max-w-xs">
-                <Label htmlFor="visibility">Profile Visibility</Label>
+                <label htmlFor="visibility" className="label">Profile Visibility</label>
                 <select 
                   id="visibility"
                   value={visibility} 
                   onChange={(e) => setVisibility(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="input"
                 >
                   <option value="public">Public</option>
                   <option value="friends">Friends Only</option>
@@ -198,7 +197,7 @@ export default function SettingsPage() {
               <div className="flex justify-between items-center w-full">
                 <div className="space-y-1">
                   <p className="font-medium">Two-Factor Authentication</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-600">
                     Add an extra layer of security to your account
                   </p>
                 </div>
@@ -219,25 +218,22 @@ export default function SettingsPage() {
                   />
                 </button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Action Buttons */}
           <div className="flex justify-center gap-4 pt-6">
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="hover:-translate-y-0.5 transition-transform"
+            <button 
+              className="btn btn-outline btn-lg hover:-translate-y-0.5 transition-transform"
             >
               Cancel
-            </Button>
-            <Button 
-              size="lg" 
+            </button>
+            <button 
               onClick={handleSave}
-              className="hover:-translate-y-0.5 transition-transform"
+              className="btn btn-primary btn-lg hover:-translate-y-0.5 transition-transform"
             >
               Save Changes
-            </Button>
+            </button>
           </div>
         </div>
       </div>

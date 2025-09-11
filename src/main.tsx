@@ -4,15 +4,14 @@ import App from './App.tsx'
 import './index.css'
 
 /**
- * SHADCN/UI BOILERPLATE APPLICATION ENTRY POINT
+ * CLEAN CSS BOILERPLATE APPLICATION ENTRY POINT
  * 
  * This is the main entry point for the React application.
  * It sets up the React root and renders the App component.
  * 
  * Standard React 18+ setup with:
  * - StrictMode for development warnings
- * - Tailwind CSS for styling
- * - shadcn/ui components
+ * - Tailwind CSS with custom CSS components for styling
  * 
  * Customization:
  * - Modify src/index.css for custom colors and styling
